@@ -1,0 +1,9 @@
+.git
+.gitignore
+run.sh
+stop.sh
+.env
+docker-compose.yaml
+databas-data/
+docker/
+config/

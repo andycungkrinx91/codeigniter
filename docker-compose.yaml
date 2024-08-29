@@ -1,0 +1,92 @@
+version: "3.6"
+networks:
+  proxy:
+    external: true
+    name: proxy
+  internal:
+    external: false
+    name: internal
+  dbserver:
+    external: true
+    name: dbserver
+services:
+  nginx: # For site 1
+    container_name: nginx
+    restart: unless-stopped # Set to 'always' for automatically restart
+    build: 
+      context: ./docker/nginx
+      args:
+        - nginx_version=${nginx_version}
+    tty: true
+    volumes:
+      - ${source_dir}:/var/www/public_html:rw # Root directory CI
+      - ./../config/nginx/default.conf:/etc/nginx/sites-enabled/vhost.conf # Site config
+      - ./../config/nginx/location.conf:/etc/nginx/conf.d/location.conf # Location config
+    ports:
+      - 80:80
+    depends_on:
+      - php
+      - database
+    networks:
+      - internal
+      - proxy
+    deploy:
+      resources:
+        limits:
+          cpus: '${nginx_cpus_limit}'
+          memory: ${nginx_memory_limit}
+        reservations:
+          cpus: '${nginx_cpus_request}'
+          memory: ${nginx_memory_request}
+  php:
+    container_name: php
+    restart: unless-stopped # Set to 'always' for automatically restart
+    build: 
+      context: ./docker/php
+      args:
+        - php_version=${php_version}
+        - composer_version=${composer_version}
+    tty: true
+    volumes:
+      - ${source_dir}:/var/www/public_html:rw # Root directory CI
+      - ./../config/php/custom.ini:/etc/php81/conf.d/custom.ini # Config
+      - ./../config/php/fpm/www.conf:/etc/php81/php-fpm.d/www.conf # Config
+    ports:
+      - 9000:9000
+    depends_on:
+      - database
+    networks:
+      - internal
+    deploy:
+      resources:
+        limits:
+          cpus: '${php_cpus_limit}'
+          memory: ${php_memory_limit}
+        reservations:
+          cpus: '${php_cpus_request}'
+          memory: ${php_memory_request}
+  database:
+    container_name: database
+    restart: unless-stopped # Set to 'always' for automatically restart
+    image: mysql:${mysql_version}
+    tty: true
+    volumes:
+      - ${db_source}:/var/lib/mysql/ # Mount db data
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=${root_password}
+      - MYSQL_DATABASE=${db_name}
+      - MYSQL_USER=${db_user}
+      - MYSQL_PASSWORD=${db_password}
+    networks:
+      - internal
+      - dbserver
+    deploy:
+      resources:
+        limits:
+          cpus: '${db_cpus_limit}'
+          memory: ${db_memory_limit}
+        reservations:
+          cpus: '${db_cpus_request}'
+          memory: ${db_memory_request}
