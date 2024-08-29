@@ -37,3 +37,24 @@ Dockerize Codeigniter4 base on alpine
 ```sh
 - ./composer-update.sh (for update all module)
 - ./composer-update.sh [module-name] (for update only one module)
+```
+
+## What you need if want to implement dockerize in your project
+```sh
+- copy folder config to your project
+- copy folder docker to your project
+- create folder database-data to your project
+- copy .env to your project
+- copy run.sh to your project
+- copy stop.sh to your project
+- copy composer-install.sh to your project
+- copy composer-update.sh to your project
+- copy docker-compose.yaml to your project
+- copy .dockerignore to your project
+- update your .gitignore (add /vendor/* and /database-data/*)
+- update .env. choose version for php, nginx and mysql
+- update mysql credential in .env if needed
+- update your CI env endpoint db.(same like credential mysql in .env )
+- ./run.sh or sh run.sh 
+- Viola your Codeigniter already dockerize
+```
